@@ -1,1 +1,140 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Poker (Play Money)</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b3d2e;
+    color: #fff;
+    text-align: center;
+  }
+  h1 { margin-top: 20px; }
+  .coin {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+  .table {
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 500px;
+    background: #145a43;
+    border-radius: 12px;
+  }
+  .cards {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    perspective: 1000px;
+  }
+  .card {
+    width: 60px;
+    height: 90px;
+    border-radius: 8px;
+    background: #fff;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 22px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+  }
+  .card.flip {
+    transform: rotateY(180deg);
+  }
+  .card-back {
+    position: absolute;
+    width: 60px;
+    height: 90px;
+    background: #333;
+    border-radius: 8px;
+    backface-visibility: hidden;
+    transform: rotateY(180deg);
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .deal { background: #f1c40f; color: #000; }
+  .result { margin-top: 15px; font-size: 18px; font-weight: bold; }
+</style>
+</head>
+<body>
 
+<h1>Mini Poker (Play Money)</h1>
+<div class="coin">Coin: <span id="coins">1000</span></div>
+
+<div class="table">
+  <button class="deal" onclick="dealCards()">Карт тараах</button>
+  <div class="cards" id="cards"></div>
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+let coins = 1000;
+const coinsSpan = document.getElementById('coins');
+const cardsDiv = document.getElementById('cards');
+const resultDiv = document.getElementById('result');
+
+const suits = ['♠','♥','♦','♣'];
+const values = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+
+function dealCards() {
+  if(coins <= 0) {
+    alert("Coin дууссан байна! Refresh хийж дахин эхлээрэй.");
+    return;
+  }
+
+  cardsDiv.innerHTML = '';
+  resultDiv.textContent = '';
+  const hand = [];
+
+  for(let i=0;i<5;i++){
+    const value = values[Math.floor(Math.random()*values.length)];
+    const suit = suits[Math.floor(Math.random()*suits.length)];
+    hand.push(value+suit);
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.textContent = value+suit;
+    card.onclick = () => card.classList.toggle('flip');
+    cardsDiv.appendChild(card);
+  }
+
+  const result = evaluateHand(hand);
+  resultDiv.textContent = result.message;
+  coins += result.coins;
+  coinsSpan.textContent = coins;
+}
+
+function evaluateHand(hand) {
+  // Simplified: Only check Pair / Two Pair / Three of a Kind / High Card
+  const counts = {};
+  hand.forEach(c => {
+    const val = c.slice(0,-1);
+    counts[val] = (counts[val] || 0) + 1;
+  });
+  const valuesArr = Object.values(counts);
+  let message = "High Card! Coin -10";
+  let coinChange = -10;
+
+  if(valuesArr.includes(3)) { message = "Three of a Kind! Coin +50"; coinChange=50; }
+  else if(valuesArr.filter(v=>v===2).length === 2) { message="Two Pair! Coin +30"; coinChange=30; }
+  else if(valuesArr.includes(2)) { message="Pair! Coin +10"; coinChange=10; }
+
+  return {message: message, coins: coinChange};
+}
+</script>
+9
+</body>
+</html>
